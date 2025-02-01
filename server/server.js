@@ -6,6 +6,8 @@ import User from "./Schema/User.js";
 import { nanoid } from "nanoid";
 import jwt from "jsonwebtoken";
 import cors from "cors";
+import path from 'path';
+import fs from "fs";
 import admin from "firebase-admin";
 
 const serviceAccountKey = JSON.parse(fs.readFileSync(path.resolve('blog-website-mern-624c4-firebase-adminsdk-zce5s-dec75c6a9b.json'), 'utf-8'));
@@ -16,11 +18,9 @@ import { getAuth } from "firebase-admin/auth";
 import { uploadOnCloudinary, deleteFromCloudinary, getPublicIdFromURL } from "./utils/cloudinary.js";
 import { upload } from "./middleware/multer.js";
 import axios from "axios";
-import fs from "fs";
 import Blog from "./Schema/Blog.js";
 import Notification from "./Schema/Notification.js";
 import Comment from "./Schema/Comment.js";
-import path from 'path';
 import helmet from 'helmet';
 
 const server = express();
