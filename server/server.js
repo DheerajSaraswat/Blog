@@ -11,7 +11,6 @@ import fs from "fs";
 import admin from "firebase-admin";
 
 const serviceAccountKey = JSON.parse(fs.readFileSync(path.resolve('blog-website-mern-624c4-firebase-adminsdk-zce5s-dec75c6a9b.json'), 'utf-8'));
-});
 
 
 import { getAuth } from "firebase-admin/auth";
