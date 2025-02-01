@@ -11,7 +11,7 @@ function AboutUser({ className, bio, social_links, joinedAt }) {
       </p>
       <div className="flex gap-x-7 gap-y-2 flex-wrap my-7 items-center text-dark-grey">
         {Object.keys(social_links).map((key, i) => {
-          const link = social_links[key];
+          let link = social_links[key];
           return link ? (
             key == "website" ? (
               <Link to={link} key={i} target="_blank">
