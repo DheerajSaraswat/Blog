@@ -32,14 +32,21 @@ admin.initializeApp({
 });
 
 server.use(express.json());
-server.use(
-  cors({
-    origin: process.env.CORS_ORIGIN.split(','),
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-  })
-);
+// server.use(
+//   cors({
+//     origin: process.env.CORS_ORIGIN.split(','),
+//     credentials: true,
+//     methods: ['GET', 'POST', 'PUT', 'DELETE'],
+//     allowedHeaders: ['Content-Type', 'Authorization']
+//   })
+// );
+const corsOptions = {
+   origin: ["https://ds-blog-space.netlify.app", "http://localhost:5173"],
+   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+   credentials: true,
+ };
+server.use(cors(corsOptions));
+
 server.use(express.json({ limit: "10mb" }));
 
 // Add security headers
