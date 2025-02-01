@@ -1015,65 +1015,6 @@ server.post("/delete-blog", verifyJWT, async (req, res) => {
   }
 });
 
-// Create temp directory if it doesn't exist
-const tempDir = path.join(__dirname, 'public', 'temp');
-if (!fs.existsSync(tempDir)){
-    fs.mkdirSync(tempDir, { recursive: true });
-}
-
-// Add cleanup function for temp files
-const cleanupTempFiles = async () => {
-  const tempDir = path.join(__dirname, 'public', 'temp');
-  
-  try {
-    const files = await fs.promises.readdir(tempDir);
-    
-    for (const file of files) {
-      try {
-        await fs.promises.unlink(path.join(tempDir, file));
-        console.log(`Deleted temp file: ${file}`);
-      } catch (err) {
-        console.error(`Error deleting temp file ${file}:`, err);
-      }
-    }
-  } catch (err) {
-    console.error('Error reading temp directory:', err);
-  }
-};
-
-// Add cleanup on server shutdown
-process.on('SIGINT', () => {
-  cleanupTempFiles();
-  process.exit(0);
-});
-
-// Add periodic cleanup (every 24 hours)
-setInterval(cleanupTempFiles, 24 * 60 * 60 * 1000);
-
-server.post("/delete-image", verifyJWT, async (req, res) => {
-  const { imageUrl } = req.body;
-  
-  if (!imageUrl) {
-    return res.status(400).json({ error: "Image URL is required" });
-  }
-
-  try {
-    const publicId = getPublicIdFromURL(imageUrl);
-    if (!publicId) {
-      return res.status(400).json({ error: "Invalid image URL" });
-    }
-
-    const result = await deleteFromCloudinary(publicId);
-    if (result && result.result === 'ok') {
-      return res.status(200).json({ message: "Image deleted successfully" });
-    } else {
-      return res.status(500).json({ error: "Failed to delete image" });
-    }
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
-});
-
 server.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
 });
