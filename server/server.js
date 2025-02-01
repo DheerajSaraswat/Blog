@@ -8,8 +8,7 @@ import jwt from "jsonwebtoken";
 import cors from "cors";
 import admin from "firebase-admin";
 
-const serviceAccountKey = await import("./blog-website-mern-624c4-firebase-adminsdk-zce5s-dec75c6a9b.json", {
-  assert: { type: "json" }
+const serviceAccountKey = JSON.parse(fs.readFileSync(path.resolve('blog-website-mern-624c4-firebase-adminsdk-zce5s-dec75c6a9b.json'), 'utf-8'));
 });
 
 
