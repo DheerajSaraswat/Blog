@@ -7,7 +7,11 @@ import { nanoid } from "nanoid";
 import jwt from "jsonwebtoken";
 import cors from "cors";
 import admin from "firebase-admin";
-import serviceAccountKey from "./blog-website-mern-624c4-firebase-adminsdk-zce5s-dec75c6a9b.json";
+
+const serviceAccountKey = await import("./blog-website-mern-624c4-firebase-adminsdk-zce5s-dec75c6a9b.json", {
+  assert: { type: "json" }
+});
+
 
 import { getAuth } from "firebase-admin/auth";
 import { uploadOnCloudinary, deleteFromCloudinary, getPublicIdFromURL } from "./utils/cloudinary.js";
