@@ -6,28 +6,28 @@ import User from "./Schema/User.js";
 import { nanoid } from "nanoid";
 import jwt from "jsonwebtoken";
 import cors from "cors";
-import admin from "firebase-admin";
-import serviceAccountKey from "./blog-website-mern-624c4-firebase-adminsdk-zce5s-dec75c6a9b.json" assert { type: "json" };
 import path from 'path';
 import fs from "fs";
 import admin from "firebase-admin";
-
-const serviceAccountKey = JSON.parse(fs.readFileSync(path.resolve('blog-website-mern-624c4-firebase-adminsdk-zce5s-dec75c6a9b.json'), 'utf-8'));
-
-
 import { getAuth } from "firebase-admin/auth";
 import { uploadOnCloudinary, deleteFromCloudinary, getPublicIdFromURL } from "./utils/cloudinary.js";
 import { upload } from "./middleware/multer.js";
 import axios from "axios";
-import fs from "fs";
 import Blog from "./Schema/Blog.js";
 import Notification from "./Schema/Notification.js";
 import Comment from "./Schema/Comment.js";
-import path from 'path';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+
+// Fix for ES modules __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
+
+// Load service account key using file system instead of import assertion
+const serviceAccountKey = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'blog-website-mern-624c4-firebase-adminsdk-zce5s-dec75c6a9b.json'), 'utf-8'));
 
 const requiredEnvVars = [
     'CLOUDINARY_CLOUD_NAME',
@@ -41,13 +41,9 @@ requiredEnvVars.forEach(varName => {
         process.exit(1);
     }
 });
-import Blog from "./Schema/Blog.js";
-import Notification from "./Schema/Notification.js";
-import Comment from "./Schema/Comment.js";
-import helmet from 'helmet';
 
 const server = express();
-let PORT = 3000;
+let PORT = process.env.PORT || 3000;
 let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/; // regex for email
 let passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/; // regex for password
 
