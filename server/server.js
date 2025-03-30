@@ -87,7 +87,8 @@ server.use(helmet.contentSecurityPolicy({
     defaultSrc: ["'self'"],
     connectSrc: ["'self'", 
       "https://ds-blog-space.netlify.app",
-      "https://blogspace-xfy7.onrender.com",
+      // "https://blogspace-xfy7.onrender.com",
+      "https://blog-qapc.onrender.com",
       "http://localhost:5173",
       "http://localhost:3000"
     ],
