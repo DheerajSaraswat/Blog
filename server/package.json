@@ -32,7 +32,6 @@
     "nodemon": "^3.0.1"
   }
 }
-=======
 {
   "name": "server",
   "version": "1.0.0",
@@ -65,4 +64,3 @@
     "nodemon": "^3.0.1"
   }
 }
->>>>>>> 74c5cf6228a6efcb99c4dc8e65c5aa01dbe4bece
