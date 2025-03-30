@@ -6,12 +6,23 @@ import User from "./Schema/User.js";
 import { nanoid } from "nanoid";
 import jwt from "jsonwebtoken";
 import cors from "cors";
+<<<<<<< HEAD
 import admin from "firebase-admin";
 import serviceAccountKey from "./blog-website-mern-624c4-firebase-adminsdk-zce5s-dec75c6a9b.json" assert { type: "json" };
+=======
+import path from 'path';
+import fs from "fs";
+import admin from "firebase-admin";
+
+const serviceAccountKey = JSON.parse(fs.readFileSync(path.resolve('blog-website-mern-624c4-firebase-adminsdk-zce5s-dec75c6a9b.json'), 'utf-8'));
+
+
+>>>>>>> 74c5cf6228a6efcb99c4dc8e65c5aa01dbe4bece
 import { getAuth } from "firebase-admin/auth";
 import { uploadOnCloudinary, deleteFromCloudinary, getPublicIdFromURL } from "./utils/cloudinary.js";
 import { upload } from "./middleware/multer.js";
 import axios from "axios";
+<<<<<<< HEAD
 import fs from "fs";
 import Blog from "./Schema/Blog.js";
 import Notification from "./Schema/Notification.js";
@@ -34,6 +45,12 @@ requiredEnvVars.forEach(varName => {
         process.exit(1);
     }
 });
+=======
+import Blog from "./Schema/Blog.js";
+import Notification from "./Schema/Notification.js";
+import Comment from "./Schema/Comment.js";
+import helmet from 'helmet';
+>>>>>>> 74c5cf6228a6efcb99c4dc8e65c5aa01dbe4bece
 
 const server = express();
 let PORT = 3000;
@@ -45,6 +62,7 @@ admin.initializeApp({
 });
 
 server.use(express.json());
+<<<<<<< HEAD
 const corsOptions = {
   origin: [
     "https://ds-blog-space.netlify.app", 
@@ -64,6 +82,23 @@ const corsOptions = {
 };
 
 server.use(cors(corsOptions));
+=======
+// server.use(
+//   cors({
+//     origin: process.env.CORS_ORIGIN.split(','),
+//     credentials: true,
+//     methods: ['GET', 'POST', 'PUT', 'DELETE'],
+//     allowedHeaders: ['Content-Type', 'Authorization']
+//   })
+// );
+const corsOptions = {
+   origin: ["https://ds-blog-space.netlify.app", "http://localhost:5173"],
+   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+   credentials: true,
+ };
+server.use(cors(corsOptions));
+
+>>>>>>> 74c5cf6228a6efcb99c4dc8e65c5aa01dbe4bece
 server.use(express.json({ limit: "10mb" }));
 
 // Add security headers
@@ -73,16 +108,20 @@ server.use(helmet());
 server.use(helmet.contentSecurityPolicy({
   directives: {
     defaultSrc: ["'self'"],
+<<<<<<< HEAD
     connectSrc: ["'self'", 
       "https://ds-blog-space.netlify.app",
       "https://blogspace-xfy7.onrender.com",
       "http://localhost:5173",
       "http://localhost:3000"
     ],
+=======
+>>>>>>> 74c5cf6228a6efcb99c4dc8e65c5aa01dbe4bece
     imgSrc: ["'self'", "data:", "https:", "http:"],
     scriptSrc: ["'self'", "'unsafe-inline'"],
     styleSrc: ["'self'", "'unsafe-inline'"],
     fontSrc: ["'self'", "https:", "data:"],
+<<<<<<< HEAD
     formAction: ["'self'"],
     frameAncestors: ["'none'"]
   }
@@ -99,6 +138,11 @@ server.use((req, res, next) => {
   next();
 });
 
+=======
+  }
+}));
+
+>>>>>>> 74c5cf6228a6efcb99c4dc8e65c5aa01dbe4bece
 mongoose.connect(process.env.DB_LOCATION, {
   autoIndex: true,
 })
@@ -110,12 +154,15 @@ mongoose.connect(process.env.DB_LOCATION, {
   process.exit(1);
 });
 
+<<<<<<< HEAD
 // Create temp directory if it doesn't exist
 const tempDir = path.join(process.cwd(), 'public', 'temp');
 if (!fs.existsSync(tempDir)){
     fs.mkdirSync(tempDir, { recursive: true });
 }
 
+=======
+>>>>>>> 74c5cf6228a6efcb99c4dc8e65c5aa01dbe4bece
 const verifyJWT = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
@@ -329,6 +376,7 @@ server.post("/google-auth", async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 server.post("/upload-image", verifyJWT, async (req, res) => {
     try {
         // Use multer upload as middleware
@@ -371,6 +419,23 @@ server.post("/upload-image", verifyJWT, async (req, res) => {
         console.error("Server error:", error);
         return res.status(500).json({ error: "Server error" });
     }
+=======
+server.post("/upload-image", upload.single("image"), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: "No file uploaded" });
+  }
+
+  try {
+    const result = await uploadOnCloudinary(req.file.path);
+    if (result) {
+      return res.status(200).json({ url: result.url, public_id: result.public_id });
+    } else {
+      return res.status(500).json({ error: "Image upload failed" });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+>>>>>>> 74c5cf6228a6efcb99c4dc8e65c5aa01dbe4bece
 });
 
 server.post("/upload-image-url", async (req, res) => {
@@ -465,6 +530,7 @@ server.get("/trending-blogs", (req, res) => {
 server.post("/create-blog", verifyJWT, async (req, res) => {
   const authorId = req.user;
   let { title, banner, des, content, tags, draft, id } = req.body;
+<<<<<<< HEAD
 
   if (!title.length) {
     return res.status(400).json({ error: "Title is required" });
@@ -474,6 +540,16 @@ server.post("/create-blog", verifyJWT, async (req, res) => {
   if (!draft) {
     if (!des.length || des.length > 200) {
       return res.status(400).json({ error: "Description should be between 1 and 200" });
+=======
+  if (!title.length) {
+    return res.status(400).json({ error: "Title is required" });
+  }
+  if (!draft) {
+    if (!des.length || des.length > 200) {
+      return res
+        .status(400)
+        .json({ error: "Description should be between 1 and 200" });
+>>>>>>> 74c5cf6228a6efcb99c4dc8e65c5aa01dbe4bece
     }
     if (!banner.length) {
       return res.status(400).json({ error: "Banner is required" });
@@ -487,6 +563,7 @@ server.post("/create-blog", verifyJWT, async (req, res) => {
   }
 
   tags = tags.map((tag) => tag.toLowerCase());
+<<<<<<< HEAD
 
   try {
     if (id) {
@@ -546,6 +623,80 @@ server.post("/create-blog", verifyJWT, async (req, res) => {
     console.error("Error saving blog:", err);
     return res.status(500).json({ error: err.message });
   }
+=======
+  const blogId =
+    id ||
+    title
+      .replace(/[^a-zA-Z0-9]/g, " ")
+      .replace(/\s+/g, "-")
+      .trim()
+      + nanoid();
+
+  if (id) {
+    Blog.findOneAndUpdate(
+      { blogId },
+      { title, des, banner, content, tags, draft: draft ? draft : false }
+    )
+      .then(() => {
+        return res.status(200).json({ id: blogId });
+      })
+      .catch((err) => {
+        return res.status(500).json({ error: err.message });
+      });
+  } else {
+    let blog = new Blog({
+      title,
+      banner,
+      des,
+      content,
+      tags,
+      author: authorId,
+      blog_id: blogId,
+      draft: Boolean(draft),
+    });
+    const data = await blog.save();
+    if (data) {
+      const incrementVal = draft ? 0 : 1;
+      User.findOneAndUpdate(
+        { _id: authorId },
+        {
+          $inc: { "account_info.total_posts": incrementVal },
+          $push: { blogs: blog._id },
+        }
+      )
+        .then((user) => {
+          return res.status(200).json({ id: blog.blog_id });
+        })
+        .catch((err) => {
+          return res
+            .status(500)
+            .json({ error: "Failed to update total post number" });
+        });
+    }
+  }
+
+  // .then((blog) => {
+  //   const incrementVal = draft ? 0 : 1;
+  //   User.findOneAndUpdate(
+  //     { _id: authorId },
+  //     {
+  //       $inc: { "account_info.total_posts": incrementVal },
+  //       $push: { "blogs": blog._id },
+  //     }
+  //       .then((user) => {
+  //         return res.status(200).json({ id: blog.blog_id });
+  //       })
+  //       .catch((err) => {
+  //         return res
+  //           .status(500)
+  //           .json({ error: "Failed to update total post number" });
+  //       })
+  //   );
+  // })
+  // .catch((err) => {
+  //   return res.status(500).json({ error: err.message });
+  // });
+>>>>>>> 74c5cf6228a6efcb99c4dc8e65c5aa01dbe4bece
 });
 
 server.post("/update-profile-image", verifyJWT, (req, res) => {
