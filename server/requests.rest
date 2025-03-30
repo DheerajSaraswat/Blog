@@ -1,7 +1,24 @@
-POST http://localhost:3000/signin 
+# POST  http://localhost:3000/signin
+# Content-Type: application/json
+
+# {
+#     "email":"john3@gmail.com",
+#     "password":"@John123"
+# }
+
+# GET  http://localhost:3000/new-notification
+# Content-Type: application/json
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3N2ZlY2I4NzJkYWMyYzRkOGM1YTk1OSIsImlhdCI6MTczNzYyNTI3M30.oCBkRqOKdziabx_bqZVebdMtjQFcEK6r-c1uNAmF3LI
+
+# {
+    
+# }
+
+POST http://localhost:3000/user-written-blogs
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3N2ZlY2I4NzJkYWMyYzRkOGM1YTk1OSIsImlhdCI6MTczODA4MDQzM30.qbd-VkGJfLo4itSd6p4rW74ieIJytgdlpGVuU1DUmP8
 Content-Type: application/json
 
 {
-    "email": "kunaa@gmail.com",
-    "password": "Kunaal"
+    "page": 1,
+    "draft": true
 }
