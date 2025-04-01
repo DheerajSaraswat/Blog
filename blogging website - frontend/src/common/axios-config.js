@@ -3,7 +3,7 @@ import { toast } from 'react-hot-toast';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_SERVER_DOMAIN,
-  timeout: 10000, // 10 seconds timeout
+  timeout: 30000, // Increase timeout to 30 seconds for image uploads
 });
 
 // Request interceptor
@@ -25,6 +25,8 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.error('API Error:', error);
+    
     if (error.response) {
       // Server responded with error
       const message = error.response.data?.error || 'Something went wrong';

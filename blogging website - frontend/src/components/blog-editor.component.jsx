@@ -11,6 +11,7 @@ import { EditorContext } from "../pages/editor.pages";
 import EditorJS from "@editorjs/editorjs";
 import { tools } from "./tools.component";
 import { ThemeContext, UserContext } from "../App";
+import api from "../common/axios-config";
 
 function BlogEditor() {
   let {
@@ -61,20 +62,15 @@ function BlogEditor() {
         size: img.size
       });
 
-      axios.post(
-        import.meta.env.VITE_SERVER_DOMAIN + "/upload-image",
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${access_token}`
-          },
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            console.log('Upload progress:', percentCompleted + '%');
-          }
+      api.post("/upload-image", formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          console.log('Upload progress:', percentCompleted + '%');
         }
-      )
+      })
       .then((res) => {
         toast.dismiss(loadingToast);
         toast.success("Uploaded 👍");
@@ -83,8 +79,8 @@ function BlogEditor() {
       })
       .catch((error) => {
         toast.dismiss(loadingToast);
-        console.error("Upload error:", error.response?.data || error.message);
-        toast.error(error.response?.data?.error || "Upload failed");
+        console.error("Upload error:", error);
+        toast.error("Failed to upload image. Please try again.");
       });
     }
   };

@@ -43,24 +43,6 @@ const uploadOnCloudinary = async (localFilePath) => {
       }
     }
     throw error; // Re-throw to be handled by caller
-    if (!localFilePath) return null;
-    // Upload the file on cloudinary
-    const response = await cloudinary.uploader.upload(localFilePath, {
-      resource_type: "auto",
-      media_metadata: true,
-    });
-    
-    // File has been uploaded successfully
-    console.log("File uploaded on cloudinary", response.url);
-    
-    // Remove file from local storage
-    fs.unlinkSync(localFilePath);
-    
-    return response;
-  } finally  {
-    // Remove the locally saved temporary file as the upload operation failed
-    fs.unlinkSync(localFilePath);
-    return null;
   }
 };
 
@@ -68,7 +50,6 @@ const deleteFromCloudinary = async (publicId) => {
   try {
     if (!publicId) return null;
     const result = await cloudinary.uploader.destroy(publicId);
-    console.log("File deleted from cloudinary", result);
     return result;
   } catch (error) {
     console.error("Error deleting from cloudinary:", error);
@@ -79,9 +60,10 @@ const deleteFromCloudinary = async (publicId) => {
 // Extract public_id from cloudinary URL
 const getPublicIdFromURL = (url) => {
   try {
+    if (!url) return null;
     const urlParts = url.split('/');
-    const filename = urlParts[urlParts.length - 1];
-    const publicId = filename.split('.')[0]; // Remove file extension
+    const filenameWithExt = urlParts[urlParts.length - 1];
+    const publicId = filenameWithExt.split('.')[0]; // Remove file extension
     return publicId;
   } catch (error) {
     console.error("Error extracting public_id:", error);
