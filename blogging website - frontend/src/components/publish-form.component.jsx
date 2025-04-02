@@ -6,6 +6,7 @@ import Tag from "./tags.component";
 import axios from "axios";
 import { UserContext } from "../App";
 import { useNavigate, useParams } from "react-router-dom";
+import api from "../common/axios-config";
 
 function PublishForm() {
   let {
@@ -58,52 +59,27 @@ function PublishForm() {
     }
   };
 
-  let handlePublish = (e) => {
-    if (e.target.className.includes("disable")) {
-      return;
-    }
-    if (!title.length) {
-      return toast.error("Please enter a title before publishing");
-    }
-    if (!des.length || des.length > 200) {
-      return toast.error(
-        "Please write a description within 200 characters limit before publishing"
-      );
-    }
-    if (!tags.length) {
-      return toast.error("Please add at least one tag before publishing");
-    }
-    let loadingToast = toast.loading("Publishing...");
-    e.target.classList.add("disable");
-    let blogData = {
-      title,
-      des,
-      tags,
-      banner,
-      content,
-      draft: false,
-    };
-    axios
-      .post(import.meta.env.VITE_SERVER_DOMAIN + "/create-blog",{...blogData, id:blog_id}, {
-        headers: {
-          Authorization: `Bearer ${access_token}`,
-        },
-      })
-      .then(() => {
-        toast.dismiss(loadingToast);
-        e.target.classList.remove("disable");
-        toast.success("Blog published successfully");
-
-        setTimeout(() => {
-          nav("/dashboard/blogs");
-        }, 500);
-      })
-      .catch(({ response }) => {
-        e.target.classList.remove("disable");
-        toast.dismiss(loadingToast);
-        return toast.error(response.data.error);
+  const handlePublish = async () => {
+    try {
+      const response = await api.post("/create-blog", {
+        title,
+        banner,
+        des,
+        content,
+        tags,
+        draft: false
       });
+      
+      if (response && response.data) {
+        toast.success("Blog published successfully!");
+      } else {
+        throw new Error("Invalid response from server");
+      }
+    } catch (error) {
+      console.error("Publish error:", error);
+    }
   };
+
   return (
     <AnimationWrapper>
       <section className="w-screen min-h-screen grid items-center lg:grid-cols-2 py-16 lg:gap-4">

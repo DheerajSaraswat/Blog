@@ -44,68 +44,51 @@ requiredEnvVars.forEach(varName => {
 
 const server = express();
 let PORT = process.env.PORT || 3000;
-let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/; // regex for email
-let passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/; // regex for password
+let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/; 
+let passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccountKey),
 });
 
-server.use(express.json());
-const corsOptions = {
-  origin: [
-    "https://ds-blog-space.netlify.app", 
-    "http://localhost:5173",             
-    "http://localhost:3000"              
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  credentials: true,
-  allowedHeaders: [
-    "Content-Type", 
-    "Authorization", 
-    "X-Requested-With",
-    "Accept"
-  ],
-  exposedHeaders: ["Content-Range", "X-Content-Range"],
-  maxAge: 86400 // 24 hours
-};
-
-server.use(cors(corsOptions));
-
-server.use(express.json({ limit: "10mb" }));
-
-// Add security headers
-server.use(helmet());
-
-// Configure specific headers if needed
-server.use(helmet.contentSecurityPolicy({
-  directives: {
-    defaultSrc: ["'self'"],
-    connectSrc: ["'self'", 
-      "https://ds-blog-space.netlify.app",
-      // "https://blogspace-xfy7.onrender.com",
-      "https://blog-qapc.onrender.com",
-      "http://localhost:5173",
-      "http://localhost:3000"
-    ],
-    imgSrc: ["'self'", "data:", "https:", "http:"],
-    scriptSrc: ["'self'", "'unsafe-inline'"],
-    styleSrc: ["'self'", "'unsafe-inline'"],
-    fontSrc: ["'self'", "https:", "data:"],
-    formAction: ["'self'"],
-    frameAncestors: ["'none'"]
-  }
+server.use(cors({
+  origin: ['http://localhost:5173', 'https://ds-blog-space.netlify.app'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: false
 }));
+
 server.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin);
-  res.header('Access-Control-Allow-Credentials', true);
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
-  );
+  console.log(`${req.method} ${req.path}`, {
+    headers: {
+      origin: req.headers.origin,
+      authorization: req.headers.authorization ? 'Present' : 'Not present'
+    }
+  });
   next();
 });
 
+server.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      connectSrc: ["'self'", 
+        "http://localhost:5173",
+        "https://ds-blog-space.netlify.app",
+        "https://blog-1-8ah0.onrender.com"
+      ],
+      imgSrc: ["'self'", "data:", "https:", "http:"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      fontSrc: ["'self'", "https:", "data:"],
+      formAction: ["'self'"]
+    }
+  }
+}));
+
+server.use(express.json({ limit: "10mb" }));
+server.use(express.urlencoded({ extended: true }));
 
 mongoose.connect(process.env.DB_LOCATION, {
   autoIndex: true,
@@ -118,7 +101,6 @@ mongoose.connect(process.env.DB_LOCATION, {
   process.exit(1);
 });
 
-// Create temp directory if it doesn't exist
 const tempDir = path.join(process.cwd(), 'public', 'temp');
 if (!fs.existsSync(tempDir)){
     fs.mkdirSync(tempDir, { recursive: true });
@@ -356,30 +338,23 @@ server.post("/upload-image", upload.single("image"), async (req, res) => {
 });
 
 server.post("/upload-image-url", async (req, res) => {
-  const { imageUrl } = req.body; // Expecting the image URL in the request body
+  const { imageUrl } = req.body;
 
   if (!imageUrl) {
     return res.status(400).json({ error: "No image URL provided" });
   }
 
   try {
-    // Fetch the image from the URL
     const response = await axios.get(imageUrl, { responseType: "arraybuffer" });
 
-    // Create a temporary file path
     const tempFilePath = path.join(
       __dirname,
       "temp",
       `image-${Date.now()}.jpg`
     );
 
-    // Write the image data to a temporary file
     fs.writeFileSync(tempFilePath, response.data);
-
-    // Upload the temporary file to Cloudinary
     const result = await uploadOnCloudinary(tempFilePath);
-
-    // Clean up the temporary file
     fs.unlinkSync(tempFilePath);
 
     if (result) {
@@ -445,43 +420,44 @@ server.get("/trending-blogs", (req, res) => {
 });
 
 server.post("/create-blog", verifyJWT, async (req, res) => {
-  const authorId = req.user;
-  let { title, banner, des, content, tags, draft, id } = req.body;
-
-  if (!title.length) {
-    return res.status(400).json({ error: "Title is required" });
-  }
-
-  // Only validate these fields if not a draft
-  if (!draft) {
-    if (!des.length || des.length > 200) {
-      return res.status(400).json({ error: "Description should be between 1 and 200" });
-
-  if (!title.length) {
-    return res.status(400).json({ error: "Title is required" });
-  }
-  if (!draft) {
-    if (!des.length || des.length > 200) {
-      return res
-        .status(400)
-        .json({ error: "Description should be between 1 and 200" });
-    }
-    if (!banner.length) {
-      return res.status(400).json({ error: "Banner is required" });
-    }
-    if (!content.blocks.length) {
-      return res.status(400).json({ error: "Content is required" });
-    }
-    if (!tags.length || tags.length > 10) {
-      return res.status(400).json({ error: "Tags should be between 1 and 10" });
-    }
-  }
-
-  tags = tags.map((tag) => tag.toLowerCase());
-
+  console.log("Starting create-blog request processing");
+  
   try {
+    const authorId = req.user;
+    console.log("Authenticated user ID:", authorId);
+    
+    let { title, banner, des, content, tags, draft, id } = req.body;
+    console.log("Received blog data:", { title, draft, id });
+
+    if (!title.length) {
+      return res.status(400).json({ error: "Title is required" });
+    }
+
+    if (!draft) {
+      if (!des.length || des.length > 200) {
+        return res.status(400).json({ error: "Description should be between 1 and 200" });
+      }
+      if (!banner.length) {
+        return res.status(400).json({ error: "Banner is required" });
+      }
+      if (!content.blocks.length) {
+        return res.status(400).json({ error: "Content is required" });
+      }
+      if (!tags.length || tags.length > 10) {
+        return res.status(400).json({ error: "Tags should be between 1 and 10" });
+      }
+    }
+
+    tags = tags.map((tag) => tag.toLowerCase());
+
+    console.log("Creating/updating blog with ID:", id || "new");
+    const blogId = id || (title
+      .replace(/[^a-zA-Z0-9]/g, " ")
+      .replace(/\s+/g, "-")
+      .trim() + nanoid());
+
     if (id) {
-      // Update existing blog
+      console.log("Updating existing blog");
       const blog = await Blog.findOneAndUpdate(
         { blog_id: id },
         {
@@ -501,12 +477,7 @@ server.post("/create-blog", verifyJWT, async (req, res) => {
 
       return res.status(200).json({ id: blog.blog_id });
     } else {
-      // Create new blog
-      const blogId = title
-        .replace(/[^a-zA-Z0-9]/g, " ")
-        .replace(/\s+/g, "-")
-        .trim() + nanoid();
-
+      console.log("Creating new blog");
       const blog = new Blog({
         title,
         banner,
@@ -520,7 +491,6 @@ server.post("/create-blog", verifyJWT, async (req, res) => {
 
       const savedBlog = await blog.save();
 
-      // Update user's blog count only if not a draft
       if (!draft) {
         await User.findOneAndUpdate(
           { _id: authorId },
@@ -534,82 +504,10 @@ server.post("/create-blog", verifyJWT, async (req, res) => {
       return res.status(200).json({ id: blogId });
     }
   } catch (err) {
-    console.error("Error saving blog:", err);
+    console.error("Error in create-blog:", err);
     return res.status(500).json({ error: err.message });
   }
-  const blogId =
-    id ||
-    title
-      .replace(/[^a-zA-Z0-9]/g, " ")
-      .replace(/\s+/g, "-")
-      .trim()
-      + nanoid();
-
-  if (id) {
-    Blog.findOneAndUpdate(
-      { blogId },
-      { title, des, banner, content, tags, draft: draft ? draft : false }
-    )
-      .then(() => {
-        return res.status(200).json({ id: blogId });
-      })
-      .catch((err) => {
-        return res.status(500).json({ error: err.message });
-      });
-  } else {
-    let blog = new Blog({
-      title,
-      banner,
-      des,
-      content,
-      tags,
-      author: authorId,
-      blog_id: blogId,
-      draft: Boolean(draft),
-    });
-    const data = await blog.save();
-    if (data) {
-      const incrementVal = draft ? 0 : 1;
-      User.findOneAndUpdate(
-        { _id: authorId },
-        {
-          $inc: { "account_info.total_posts": incrementVal },
-          $push: { blogs: blog._id },
-        }
-      )
-        .then((user) => {
-          return res.status(200).json({ id: blog.blog_id });
-        })
-        .catch((err) => {
-          return res
-            .status(500)
-            .json({ error: "Failed to update total post number" });
-        });
-    }
-  }
-
-  // .then((blog) => {
-  //   const incrementVal = draft ? 0 : 1;
-  //   User.findOneAndUpdate(
-  //     { _id: authorId },
-  //     {
-  //       $inc: { "account_info.total_posts": incrementVal },
-  //       $push: { "blogs": blog._id },
-  //     }
-  //       .then((user) => {
-  //         return res.status(200).json({ id: blog.blog_id });
-  //       })
-  //       .catch((err) => {
-  //         return res
-  //           .status(500)
-  //           .json({ error: "Failed to update total post number" });
-  //       })
-  //   );
-  // })
-  // .catch((err) => {
-  //   return res.status(500).json({ error: err.message });
-  // });
-}}});
+});
 
 server.post("/update-profile-image", verifyJWT, (req, res) => {
   const { image } = req.body;
@@ -706,7 +604,6 @@ server.post("/search-blogs", (req, res) => {
     findQuery = { author, draft: false };
   }
   const maxLimit = limit ? limit : 5;
-  // console.log(maxLimit);
   Blog.find(findQuery)
     .populate(
       "author",
@@ -1116,7 +1013,6 @@ server.post("/delete-blog", verifyJWT, async (req, res) => {
       return res.status(404).json({ error: "Blog not found" });
     }
 
-    // Delete banner image from cloudinary if it exists
     if (blog.banner) {
       const publicId = getPublicIdFromURL(blog.banner);
       if (publicId) {
@@ -1124,7 +1020,6 @@ server.post("/delete-blog", verifyJWT, async (req, res) => {
       }
     }
 
-    // Delete blog and related data
     await Promise.all([
       Blog.findOneAndDelete({ blog_id }),
       Notification.deleteMany({ blog: blog._id }),
