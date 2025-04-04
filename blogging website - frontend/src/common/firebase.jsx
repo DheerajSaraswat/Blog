@@ -17,13 +17,33 @@ const provider = new GoogleAuthProvider()
 const auth = getAuth()
 
 export const authWithGoogle = async() => {
-    let user = null
-    await signInWithPopup(auth, provider)
-    .then( (res)=>{
-        user = res.user
-    } )
-    .catch((err)=>{
-        console.log(err)
-    })
-    return user
+    try {
+        console.log("Starting Google auth...");
+        const result = await signInWithPopup(auth, provider);
+        // console.log("Auth result:", result);
+        
+        const user = result.user;
+        // console.log("User data:", {
+        //     email: user.email,
+        //     name: user.displayName,
+        //     photo: user.photoURL
+        // });
+        
+        const token = await user.getIdToken();
+        // console.log("Got ID token:", token.substring(0, 10) + "...");
+        
+        return {
+            accessToken: token,
+            email: user.email,
+            name: user.displayName,
+            profileImage: user.photoURL
+        };
+    } catch (err) {
+        // console.error("Detailed auth error:", {
+        //     code: err.code,
+        //     message: err.message,
+        //     fullError: err
+        // });
+        throw err;
+    }
 }
