@@ -3,8 +3,8 @@ import { toast } from 'react-hot-toast';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_SERVER_DOMAIN,
-  timeout: 30000, 
-  withCredentials: false, 
+  timeout: 30000,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   }
@@ -12,12 +12,6 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    console.log('Making request:', {
-      url: config.url,
-      method: config.method,
-      headers: config.headers
-    });
-    
     const token = sessionStorage.getItem('user');
     if (token) {
       const parsedToken = JSON.parse(token).access_token;
@@ -35,16 +29,16 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.code === 'ERR_NETWORK') {
-      toast.error('Network error - please check your connection');
+      toast.error('Unable to connect to server. Please check your connection or try again later.');
       return Promise.reject(error);
     }
 
     if (!error.response) {
-      toast.error('No response from server');
+      toast.error('Server not responding. Please try again later.');
       return Promise.reject(error);
     }
 
-    const message = error.response.data?.error || 'An error occurred';
+    const message = error.response.data?.error || 'An unexpected error occurred';
     toast.error(message);
     return Promise.reject(error);
   }

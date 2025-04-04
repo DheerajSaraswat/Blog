@@ -40,6 +40,11 @@ const App = () => {
 
   }, []);
 
+  console.log('Environment:', {
+    serverDomain: import.meta.env.VITE_SERVER_DOMAIN,
+    nodeEnv: import.meta.env.NODE_ENV
+  });
+
   return (
     <ThemeContext.Provider value={{theme, setTheme}}>
       <UserContext.Provider value={{ userAuth, setUserAuth }}>

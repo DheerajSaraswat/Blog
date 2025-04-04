@@ -52,10 +52,14 @@ admin.initializeApp({
 });
 
 server.use(cors({
-  origin: ['http://localhost:5173', 'https://ds-blog-space.netlify.app'],
+  origin: [
+    'http://localhost:5173',                // Local development
+    'https://ds-blog-space.netlify.app',    // Your deployed frontend
+    'https://blog-qapc.onrender.com'      // Your deployed backend
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: false
+  credentials: true
 }));
 
 server.use((req, res, next) => {
