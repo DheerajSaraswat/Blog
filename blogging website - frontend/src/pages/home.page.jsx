@@ -39,7 +39,7 @@ function Homepage() {
       return;
     }
     setPageState(category);
-    axios.get(`http://localhost:3001/api/blog/${category}`);
+    axios.get(`${import.meta.env.VITE_SERVER_DOMAIN}/api/blog/${category}`);
   };
 
   const fetchLatestBlogs = ({page=1}) => {
